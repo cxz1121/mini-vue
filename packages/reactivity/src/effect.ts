@@ -8,7 +8,7 @@ function cleanupEffect(effect) {
   deps.length = 0
 }
 
-class ReactiveEffect {
+export class ReactiveEffect {
   public active = true
   public parent = null
   public deps = []
@@ -62,10 +62,16 @@ export function track(target, key, type) {
     depsMap.set(key, (dep = new Set()))
   }
 
-  let shouldTrack = !dep.has(activeEffect)
-  if (shouldTrack) { //双向收集
-    dep.add(activeEffect)
-    activeEffect.deps.push(dep)
+  trackEffects(dep)
+}
+
+export function trackEffects(dep) {
+  if (activeEffect) {
+    let shouldTrack = !dep.has(activeEffect)
+    if (shouldTrack) { //双向收集
+      dep.add(activeEffect)
+      activeEffect.deps.push(dep)
+    }
   }
 }
 
@@ -74,15 +80,19 @@ export function trigger(target, key, oldValue, newValue, type) {
   if (!depsMap) return
   let effects = depsMap.get(key)
   if (effects) {
-    effects = new Set(effects)
-    effects.forEach(effect => {
-      if (effect !== activeEffect) {
-        if (effect.scheduler) {
-          effect.scheduler()
-        } else {
-          effect.run()
-        }
-      }
-    })
+    triggerEffects(effects)
   }
+}
+
+export function triggerEffects(effects) {
+  effects = new Set(effects)
+  effects.forEach(effect => {
+    if (effect !== activeEffect) {
+      if (effect.scheduler) {
+        effect.scheduler()
+      } else {
+        effect.run()
+      }
+    }
+  })
 }
