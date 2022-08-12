@@ -2,6 +2,11 @@ import { isObject } from "@vue/shared";
 import { mutableHandler, ReactiveFlags } from "./baseHandler";
 
 const reactiveMap = new WeakMap()
+
+export function isReactive(value) {
+  return !!(value && value[ReactiveFlags.isReactive])
+}
+
 export function reactive(target) {
   if (!isObject(target)) return
 
