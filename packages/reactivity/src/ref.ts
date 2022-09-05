@@ -56,3 +56,21 @@ export function toRefs(object) {
 
     return result
 }
+
+export function proxyRefs(object) {
+    return new Proxy(object, {
+        get(object, key, receiver) {
+            const r = Reflect.get(object, key, receiver)
+            return r.__v_isRef ? r.value : r
+        },
+        set(object, key, newValue, receiver) {
+            const oldValue = object[key]
+            if(oldValue.__v_isRef) {
+                oldValue.value = newValue
+                return true
+            } else {
+                return Reflect.set(object, key, newValue, receiver)
+            }
+        }
+    })
+}
