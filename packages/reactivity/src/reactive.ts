@@ -19,7 +19,7 @@ export function isProxy(value) {
 
 function createReactiveObject(target, baseHandler, proxyMap) {
   if (!isObject(target)) return
-  if (isProxy(target)) return target
+  // if (isProxy(target)) return target
   let exisitingProxy = proxyMap.get(target)
   if (exisitingProxy) {
     return exisitingProxy
@@ -30,13 +30,16 @@ function createReactiveObject(target, baseHandler, proxyMap) {
 }
 
 export function reactive(target) {
+  if (isReactive(target)) return target
   return createReactiveObject(target, mutableHandler, reactiveMap)
 }
 
 export function readonly(target) {
+  if (isReadonly(target)) return target
   return createReactiveObject(target, readonlyHandler, readonlyMap)
 }
 
 export function shallowReadonly(target) {
+  if (isReadonly(target)) return target
   return createReactiveObject(target, shallowReadonlyHandler, shallowReadonlyMap)
 }
