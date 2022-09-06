@@ -9,7 +9,7 @@ export function patchProp(el, key, preValue, newValue) {
         patchClass(el, newValue)
     } else if(key === 'style') {
         patchStyle(el, preValue, newValue)
-    } else if(/^on[^a-z]/.test(key)) {
+    } else if(/^on[a-z]/.test(key)) {
         pacthEvent(el, key, newValue)
     } else {
         patchAttrs(el, key, newValue)
