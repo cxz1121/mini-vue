@@ -79,12 +79,25 @@ export function createRenderer(renderOptions) {
         //9数组   空的   卸载数组
         
         if(newShapeFlag && newShapeFlag & ShapeFlags.TEXT_CHILDREN) { //新的是文本
-            if(preShapeFlag && preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-                unmountChildren(c1)
+            if(preShapeFlag && preShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组
+                unmountChildren(c1) //卸载老数组
             }
-            hostSetElementText(el, c2)
-        } else {
-            console.log('else');
+            hostSetElementText(el, c2) //设置新文本 1 4 7
+        } else { //新的是 空 或 数组
+            if(preShapeFlag && preShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组
+                if(newShapeFlag && newShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组，新的是数组
+                    //diff 8
+                } else { //老的是数组，新的是空 9
+                    unmountChildren(c1)
+                }
+            } else { //老的是文本 或 空，新的是数组 或 空 2 3 5 6
+                if(preShapeFlag && preShapeFlag & ShapeFlags.TEXT_CHILDREN) { //老的是文本 设置为 空，包含了老的为空
+                    hostSetElementText(el, '')
+                }
+                if(newShapeFlag && newShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //新的为数组 挂载，否则为空 不操作
+                    mountChildren(c2, el)
+                }
+            }
         }
 
     }
