@@ -1,4 +1,5 @@
-import { ShapeFlags } from '@vue/shared';
+import { isString, ShapeFlags } from '@vue/shared';
+import { createVnode, Text } from './vnode';
 export function createRenderer(renderOptions) {
     let {
         insert: hostInsert,
@@ -13,9 +14,16 @@ export function createRenderer(renderOptions) {
         patchProp: hostPatchProp
     } = renderOptions
 
+    const normalize = (child) => {
+        if(isString(child)) {
+            return createVnode(Text, null, child)
+        }
+        return child
+    }
     const mountChildren = (children, container) => {
         for(let i = 0; i < children.length; i++) {
-            patch(null, children[i], container)
+            let child = normalize(children[i])
+            patch(null, child, container)
         }
     }
 
@@ -36,11 +44,29 @@ export function createRenderer(renderOptions) {
             }
         }
     }
+    const processText = (n1, n2, container) => {
+        if(n1 === null) {
+            let el = n2.el = hostCreateText(n2.children)
+            hostInsert(el, container)
+        } else {
+
+        }
+    }
     const patch = (n1, n2, container) => {
         if(n1 === n2) return
+        const { type, shapeFlag } = n2
         if(n1 == null) {
             //初次渲染 mount
-            mountElement(n2, container)
+            switch (type) {
+                case Text:
+                    processText(n1, n2, container)
+                    break;
+                default:
+                    if(shapeFlag & ShapeFlags.ELEMENT) {
+                        mountElement(n2, container)
+                    }
+                    break;
+            }
         } else {
             //更新
         }
