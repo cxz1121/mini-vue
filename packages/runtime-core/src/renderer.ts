@@ -22,8 +22,8 @@ export function createRenderer(renderOptions) {
     }
     const mountChildren = (children, container) => {
         for(let i = 0; i < children.length; i++) {
-            let child = normalize(children[i])
-            patch(null, child, container)
+            children[i] = normalize(children[i])
+            patch(null, children[i], container)
         }
     }
 
@@ -56,6 +56,38 @@ export function createRenderer(renderOptions) {
             }
         }
     }
+    const unmountChildren = (children) => {
+        for (let i = 0; i < children.length; i++) {
+            unmount(children[i])
+        }
+    }
+    const patchChildren = (n1, n2, el) => {
+        const c1 = n1.children
+        const c2 = n2.children
+
+        const preShapeFlag = n1.shapeFlag
+        const newShapeFlag = n2.shapeFlag
+        //-老的   新的   应操作
+        //1文本   文本   不同 就更新文本
+        //2文本   数组   清空文本 再挂载
+        //3文本   空的   清空文本
+        //4空的   文本   设置文本   
+        //5空的   数组   挂载
+        //6空的   空的   不操作
+        //7数组   文本   卸载数组 设置文本
+        //8数组   数组   diff算法
+        //9数组   空的   卸载数组
+        
+        if(newShapeFlag && newShapeFlag & ShapeFlags.TEXT_CHILDREN) { //新的是文本
+            if(preShapeFlag && preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+                unmountChildren(c1)
+            }
+            hostSetElementText(el, c2)
+        } else {
+            console.log('else');
+        }
+
+    }
     const patchElement = (n1, n2, container) => {
         let el = n2.el = n1.el
         
@@ -63,6 +95,8 @@ export function createRenderer(renderOptions) {
         let newProps = n2.props || {}
 
         patchProps(el, oldProps, newProps)
+
+        patchChildren(n1, n2, el)
     }
     const processElement = (n1, n2, container) => {
         if(n1 === null) {
