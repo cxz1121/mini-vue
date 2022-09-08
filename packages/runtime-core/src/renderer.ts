@@ -27,10 +27,9 @@ export function createRenderer(renderOptions) {
         }
     }
 
-    const mountElement = (vnode, container) => {
+    const mountElement = (vnode, container, anchor) => {
         let { type, props, children, shapeFlag } = vnode
         let el = vnode.el = hostCreateElement(type)
-        hostInsert(el, container)
         if(props) {
             for (let key in props) {
                 hostPatchProp(el, key, null, props[key])
@@ -43,6 +42,7 @@ export function createRenderer(renderOptions) {
                 mountChildren(children, el)
             }
         }
+        hostInsert(el, container, anchor)
     }
     const patchProps = (el, oldProps, newProps) => {
         if(newProps) {
@@ -60,6 +60,60 @@ export function createRenderer(renderOptions) {
         for (let i = 0; i < children.length; i++) {
             unmount(children[i])
         }
+    }
+    const patchKeyedChildren = (c1, c2, el) => {
+        let i = 0
+        let e1 = c1.length - 1
+        let e2 = c2.length - 1
+
+        //sync from start
+        while(i <= e1 && i <= e2) {
+            const n1 = c1[i]
+            const n2 = c2[i]
+            if(isSameVnode(n1, n2)) {
+                patch(n1, n2, el)
+            } else {
+                break
+            }
+            i++
+        }
+
+        //sync from en
+        while(i <= e1 && i <= e2) {
+            const n1 = c1[e1]
+            const n2 = c2[e2]
+            if(isSameVnode(n1, n2)) {
+                patch(n1, n2, el)
+            } else {
+                break
+            }
+            e1--
+            e2--
+        }
+
+        console.log('i:'+i, 'e1:'+e1, 'e2:'+e2);
+
+        //common sequence + mount
+        if(i > e1 && i <= e2) {
+            while(i <= e2) {
+                const nextPos = e2 + 1
+                const anchor = nextPos < c2.length ? c2[nextPos].el : null
+                patch(null, c2[i], el, anchor)
+                i++
+            }
+        }
+
+        //common sequence + unmount
+        if(i > e2 && i <= e1) {
+            while(i <= e1) {
+                unmount(c1[i])
+                i++
+            }
+        }
+
+
+        // console.log(i, e1, e2);
+        
     }
     const patchChildren = (n1, n2, el) => {
         const c1 = n1.children
@@ -87,7 +141,7 @@ export function createRenderer(renderOptions) {
             if(preShapeFlag && preShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组
                 if(newShapeFlag && newShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组，新的是数组
                     //diff 8
-                    // patchKeyedChildren(c1, c2)
+                    patchKeyedChildren(c1, c2, el)
                 } else { //老的是数组，新的是空 9
                     unmountChildren(c1)
                 }
@@ -112,9 +166,9 @@ export function createRenderer(renderOptions) {
 
         patchChildren(n1, n2, el)
     }
-    const processElement = (n1, n2, container) => {
+    const processElement = (n1, n2, container, anchor) => {
         if(n1 === null) {
-            mountElement(n2, container)
+            mountElement(n2, container, anchor)
         } else {
             //更新
             patchElement(n1, n2, container)
@@ -132,7 +186,7 @@ export function createRenderer(renderOptions) {
             }
         }
     }
-    const patch = (n1, n2, container) => {
+    const patch = (n1, n2, container, anchor = null) => {
         if(n1 === n2) return
 
         if(n1 && !isSameVnode(n1, n2)) {
@@ -148,7 +202,7 @@ export function createRenderer(renderOptions) {
                 break;
             default:
                 if(shapeFlag & ShapeFlags.ELEMENT) {
-                    processElement(n1, n2, container)
+                    processElement(n1, n2, container, anchor)
                 }
                 break;
         }
