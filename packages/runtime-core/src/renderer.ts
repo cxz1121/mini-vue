@@ -87,6 +87,7 @@ export function createRenderer(renderOptions) {
             if(preShapeFlag && preShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组
                 if(newShapeFlag && newShapeFlag & ShapeFlags.ARRAY_CHILDREN) { //老的是数组，新的是数组
                     //diff 8
+                    // patchKeyedChildren(c1, c2)
                 } else { //老的是数组，新的是空 9
                     unmountChildren(c1)
                 }
