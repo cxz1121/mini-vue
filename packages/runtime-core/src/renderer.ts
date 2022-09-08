@@ -112,8 +112,45 @@ export function createRenderer(renderOptions) {
         }
 
 
-        // console.log(i, e1, e2);
+        //前面优化完毕
+        //乱序比对
+        let s1 = i
+        let s2 = i
         
+        const keyToNewIndexMap = new Map() // Map { newkey => index}
+        for(let i = s2; i <= e2; i++) {
+            keyToNewIndexMap.set(c2[i].key, i)
+        }
+
+        console.log(keyToNewIndexMap);
+
+
+        const toBePatch = e2 - s2 + 1 // 新的总个数
+        const newIndexToOldIndexMap = new Array(toBePatch).fill(0) //用来记录新的元素在老的位置 默认为0 处理之后还为0的话 就是新元素 挂载
+        for(let i = s1; i <= e1; i++) {
+            const oldChild = c1[i]
+            let newIndex = keyToNewIndexMap.get(oldChild.key)
+            if(!newIndex) {
+                unmount(oldChild)
+            } else {
+                newIndexToOldIndexMap[newIndex - s2] = i + 1 //+1 的目的是 确保 0是未 patch 过的，处理之后还为0的话 就是新元素
+                patch(oldChild, c2[newIndex], el)
+            }
+        }
+        console.log(newIndexToOldIndexMap);
+        
+        //需要移动位置
+        for(let i = toBePatch - 1; i >= 0; i--) {
+            let index = i + s2
+            let current = c2[index]
+            let anchor = index + 1 < c2.length ? c2[index + 1].el : null
+            if(newIndexToOldIndexMap [i] === 0) {
+                patch(null, current, el, anchor)
+            } else {
+                hostInsert(current.el, el, anchor)
+            }
+        }
+
     }
     const patchChildren = (n1, n2, el) => {
         const c1 = n1.children
