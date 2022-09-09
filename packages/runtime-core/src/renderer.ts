@@ -151,6 +151,8 @@ export function createRenderer(renderOptions) {
             }
         }
 
+        //最长递增子序列
+
     }
     const patchChildren = (n1, n2, el) => {
         const c1 = n1.children
