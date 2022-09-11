@@ -149,7 +149,7 @@ export function createRenderer(renderOptions) {
       }
     }
 
-    //最长递增子序列  贪心算法 二分查找
+    //最长递增子序列  diff 优化 贪心算法 二分查找
   }
   const patchChildren = (n1, n2, el) => {
     const c1 = n1.children
