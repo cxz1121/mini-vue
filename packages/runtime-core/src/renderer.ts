@@ -91,7 +91,7 @@ export function createRenderer(renderOptions) {
       e2--
     }
 
-    // console.log('i:' + i, 'e1:' + e1, 'e2:' + e2)
+    console.log('i:' + i, 'e1:' + e1, 'e2:' + e2)
 
     //common sequence + mount
     if (i > e1 && i <= e2) {
