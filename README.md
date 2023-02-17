@@ -1,3 +1,3 @@
 # mini-vue
 mini vue
-vue3
+vue version: vue3
